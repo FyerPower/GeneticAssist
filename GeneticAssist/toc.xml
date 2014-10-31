@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Addon Author="Gatorade" APIVersion="9" Name="GeneticAssist" Description="">
+
+	<!-- Libs -->
+  <Script Name="libs\GeminiAddon.lua"/>
+	<Script Name="libs\GeminiDB-1.0.lua"/>
+
+  <!-- Types -->
+  <Script Name="Types\Circle.lua"/>
+  <Script Name="Types\Line.lua"/>
+  <Script Name="Types\Marker.lua"/>
+  <Script Name="Types\Notification.lua"/>
+
+  <!-- Config / Utility -->
+  <Script Name="GeneticAssistConfig.lua"/>
+  <Script Name="GeneticAssistUtil.lua"/>
+
+  <!-- Main Script -->
+  <Script Name="GeneticAssist.lua"/>
+
+  <!-- Encounters -->
+  <Script Name="Encounters\X89.lua"/>
+  <Script Name="Encounters\Kuralak.lua"/>
+  <Script Name="Encounters\Convergence.lua"/>
+  <Script Name="Encounters\Omhna.lua"/>
+
+  <!-- XML -->
+  <Form Name="GeneticAssist.xml"/>
+
+</Addon>
