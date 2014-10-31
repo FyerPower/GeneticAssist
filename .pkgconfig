@@ -1,0 +1,5 @@
+Name: GeneticAssist
+DirIgnore:
+  - Assets
+FileIgnore:
+  - readme.md
