@@ -1,5 +1,11 @@
 -----------------------------------------------------------------------------------------------
--- GeneticAssist
+--   _____                 _   _                         _     _
+--  / ____|               | | (_)          /\           (_)   | |
+-- | |  __  ___ _ __   ___| |_ _  ___     /  \   ___ ___ _ ___| |_
+-- | | |_ |/ _ \ '_ \ / _ \ __| |/ __|   / /\ \ / __/ __| / __| __|
+-- | |__| |  __/ | | |  __/ |_| | (__   / ____ \\__ \__ \ \__ \ |_
+--  \_____|\___|_| |_|\___|\__|_|\___| /_/    \_\___/___/_|___/\__|
+--
 -- slash command to turn the addon on/off: /ga
 -----------------------------------------------------------------------------------------------
 
@@ -17,6 +23,7 @@ local ICCommLib  = ICCommLib
 local Apollo     = Apollo
 local Vector3    = Vector3
 local pairs      = pairs
+local ipairs     = ipairs
 local math       = math
 local table      = table
 local Print      = Print
@@ -31,7 +38,9 @@ local Util       = GeneticAssistUtil
 -----------------------------------------------------------------------------------------------
 
 local GeneticAssist = {
-	callbacks = {}
+	tCallbacks = {},
+	tUnits = {},
+	tGroupMembers = {}
 }
 
 function GeneticAssist:new(o)
@@ -51,7 +60,6 @@ function GeneticAssist:OnLoad()
   self.xmlDoc = XmlDoc.CreateFromFile("GeneticAssist.xml")
   self.xmlDoc:RegisterCallback("OnDocumentReady", self)
 	self.db = GeminiDB:New(self, tDefaults)
-	self.iUnits = {}
 end
 
 function GeneticAssist:OnDocumentReady()
@@ -61,139 +69,92 @@ function GeneticAssist:OnDocumentReady()
 	Apollo.RegisterEventHandler("UnitCreated",          "OnUnitCreated",         self) -- Unit Created
 	Apollo.RegisterEventHandler("UnitDestroyed",        "OnUnitDestroyed",       self) -- Unit Destroyed
 
- --  -- Group Monitoring
-	-- Apollo.RegisterEventHandler("Group_Join",           "OnGroupJoin",           self) -- I Joined a Group
-	-- Apollo.RegisterEventHandler("Group_Left",           "OnGroupLeft",           self) -- I Left a Group
-	-- Apollo.RegisterEventHandler("Group_Add",            "OnGroupAdd",            self) -- A Group Member was Added
-	-- Apollo.RegisterEventHandler("Group_Remove",         "OnGroupRemove",         self) -- A Group Member was Removed / Left
-	-- Apollo.RegisterEventHandler("Group_MemberPromoted", "OnGroupMemberPromoted", self) -- Group Leader Change
+  -- Group Monitoring
+	Apollo.RegisterEventHandler("Group_Join",           "OnGroupJoin",           self) -- I Joined a Group
+	Apollo.RegisterEventHandler("Group_Left",           "OnGroupLeft",           self) -- I Left a Group
+	Apollo.RegisterEventHandler("Group_Add",            "OnGroupAdd",            self) -- A Group Member was Added
+	Apollo.RegisterEventHandler("Group_Remove",         "OnGroupRemove",         self) -- A Group Member was Removed / Left
+	Apollo.RegisterEventHandler("Group_MemberPromoted", "OnGroupMemberPromoted", self) -- Group Leader Change
 
- --  if GroupLib.InRaid() or GroupLib.InGroup() then
- --  	self:OnGroupJoin()
- --  end
+  if GroupLib.InRaid() or GroupLib.InGroup() then
+  	self:OnGroupJoin()
+  end
 end
 
 function GeneticAssist:SlashCommand()
 end
 
 -----------------------------------------------------------------------------------------------
--- Events: Unit Management
+--   _    _       _ _       __  __                                                   _
+--  | |  | |     (_) |     |  \/  |                                                 | |
+--  | |  | |_ __  _| |_    | \  / | __ _ _ __   __ _  __ _  ___ _ __ ___   ___ _ __ | |_
+--  | |  | | '_ \| | __|   | |\/| |/ _` | '_ \ / _` |/ _` |/ _ \ '_ ` _ \ / _ \ '_ \| __|
+--  | |__| | | | | | |_    | |  | | (_| | | | | (_| | (_| |  __/ | | | | |  __/ | | | |_
+--   \____/|_| |_|_|\__|   |_|  |_|\__,_|_| |_|\__,_|\__, |\___|_| |_| |_|\___|_| |_|\__|
+--                                                    __/ |
+--                                                   |___/
 -----------------------------------------------------------------------------------------------
-
-function GeneticAssist:OnUnitDestroyed(tUnit)
-	if not tUnit then return; end
-
-	local unitid = tUnit:GetId()
-	if self.iUnits[unitid] then
-		Print("UnitDestroyed: ("..unitid..") "..tUnit:GetName())
-
-		self:DestroyUnit(self.iUnits[unitid])
-		self.iUnits[unitid] = nil
-
-		if Util:TableLength(self.iUnits) == 0 then
-			Apollo.RemoveEventHandler("NextFrame", self)
-		end
-	end
-end
 
 function GeneticAssist:OnUnitCreated(tUnit)
 	if not tUnit then return; end
+
+	local unitid = tUnit:GetId()
 	local unitname = tUnit:GetName()
-	local config   = Encounters[unitname]
-	if config then
-		local unitid = tUnit:GetId()
-		if not self.iUnits[unitid] then
-			Print("UnitCreated: ("..unitid..") "..unitname)
-			self.iUnits[unitid] = { ['unit'] = tUnit, ['id'] = unitid, ['name'] = unitname, ['config'] = config }
+	local config = Encounters[unitname]
+	if config and not self.tUnits[unitid] then
+		Print(unitid..": "..unitname.." ~ Created")
+		self.tUnits[unitid] = { ['unit'] = tUnit, ['name'] = unitname, ['config'] = config }
+		self:CreateUnit(self.tUnits[unitid])
 
-			self:CreateUnit(self.iUnits[unitid])
-
-			-- If this is the first unit that we're watching, then lets go ahead and begin updating
-			if Util:TableLength(self.iUnits) == 1 then
-				Apollo.RegisterEventHandler("NextFrame", "OnUpdate", self)
-			end
+		if Util:TableLength(self.tUnits) == 1 then
+			Apollo.RegisterEventHandler("NextFrame", "OnUpdate", self)
 		end
 	end
 end
 
 function GeneticAssist:OnUpdate()
-	if not self.iUnits then return end
+	if not self.tUnits then return end
 
-	for _, unit in pairs(self.iUnits) do
-		local config = unit['config']
-
-		-- if false it means that the unit doesn't exist anymore, but we're not destroying the infomartion
-		if config['exists'] ~= false then
-			if unit['unit']:IsInCombat() or config['SkipCombatCheck'] == true then
+	for _, unit in pairs(self.tUnits) do
+		if unit then
+			if unit['unit']:IsInCombat() or unit['config']['SkipCombatCheck'] == true then
 				self:UpdateUnit(unit)
 			else
-				self:DestroyUnit(unit)
+				self:HideUnit(unit)
 			end
 		end
 	end
 end
 
+function GeneticAssist:OnUnitDestroyed(tUnit)
+	if not tUnit then return; end
 
------------------------------------------------------------------------------------------------
--- Events: Group Management
------------------------------------------------------------------------------------------------
+	local unitid = tUnit:GetId()
+	if self.tUnits[unitid] then
+		Print(unitid..": "..tUnit:GetName().." ~ Destroyed")
+		self:DestroyUnit(self.tUnits[unitid])
+		self.tUnits[unitid] = nil
 
--- -- You've joined a group
--- function GeneticAssist:OnGroupJoin()
--- 	Print("You Joined Group")
--- 	self.groupMembers = {}
--- 	self:UpdateGroup()
--- end
+		if Util:TableLength(self.tUnits) == 0 then
+			Apollo.RemoveEventHandler("NextFrame", self)
+		end
+	end
+end
 
--- -- You've left a group
--- function GeneticAssist:OnGroupLeft()
--- 	Print("You Left Group")
---   self.channelName = nil
---   self.channel = nil
---   self.groupMembers = {}
--- end
+-- Callbacks (used so encounters can bind to specific events)
+function GeneticAssist:SetCallback(unitname, type, method)
+	if not self.tCallbacks[unitname] then
+		self.tCallbacks[unitname] = {}
+	end
+	self.tCallbacks[unitname][type] = method
+end
 
--- -- A member has joined your group
--- function GeneticAssist:OnGroupAdd(strMemberName)
--- 	Print("Member Joined Group: "..strMemberName)
--- 	self:UpdateGroup()
--- end
-
--- -- A member has left your group
--- function GeneticAssist:OnGroupRemove(strMemberName, eReason)
--- 	Print("Member Left Group: "..strMemberName)
---   if eReason == GroupLib.RemoveReason.Disband then return; end
--- 	table.remove(self.groupMembers, GetTableIndex(self.groupMembers, strMemberName))
--- end
-
--- -- A member has been promoted to party leader
--- function GeneticAssist:OnGroupMemberPromoted(strMemberName)
--- 	self.groupLeader = strMemberName
--- 	self.channelName = tostring(self.groupLeader .. "_GAA_Channel")
--- 	self.channel = ICCommLib.JoinChannel(self.channelName, "OnChanMessage", self)
--- 	Print("Joined Channel: "..self.channelName)
--- end
-
--- function GeneticAssist:UpdateGroup()
--- 	Print("Group Update")
--- 	for i = 1, GroupLib.GetMemberCount(), 1 do
---     local tGroupMember = GroupLib.GetGroupMember(i)
---     if tGroupMember.bIsLeader then
---     	self:OnGroupMemberPromoted(tGroupMember.strCharacterName)
---     end
--- 		self.groupMembers[tGroupMember.strCharacterName] = tGroupMember
---   end
--- end
-
------------------------------------------------------------------------------------------------
--- Functions: Unit Management
------------------------------------------------------------------------------------------------
 
 function GeneticAssist:CreateUnit(unit)
 	local config = unit['config']
 
-	if self.callbacks[unit['name']] and self.callbacks[unit['name']]['OnCreate'] then
-		self.callbacks[unit['name']]['OnCreate'](unit)
+	if self.tCallbacks[unit['name']] and self.tCallbacks[unit['name']]['OnCreate'] then
+		self.tCallbacks[unit['name']]['OnCreate'](unit)
 	end
 
 	if config['Line'] then
@@ -234,107 +195,95 @@ end
 function GeneticAssist:DestroyUnit(unit)
 	local config = unit['config']
 
-	if self.callbacks[unit['name']] and self.callbacks[unit['name']]['OnDestroy'] then
-		self.callbacks[unit['name']]['OnDestroy'](unit)
+	if self.tCallbacks[unit['name']] and self.tCallbacks[unit['name']]['OnDestroy'] then
+		self.tCallbacks[unit['name']]['OnDestroy'](unit)
 	end
 
-	if config['Line'] and unit['Line'] then
+	if config['Line'] then
 		unit['Line']:Destroy()
 	end
 
-	if config['Circle'] and unit['Circle'] then
+	if config['Circle'] then
 		unit['Circle']:Destroy()
 	end
 
-	if config['Marker'] and unit['Marker'] then
+	if config['Marker'] then
 		unit['Marker']:Destroy()
 	end
 
-	if config['Notification'] and unit['Notification'] then
+	if config['Notification'] then
 		unit['Notification']:Destroy()
 	end
 
 	if config['DeBuff'] then
 		for buffname, _ in pairs(config['DeBuff']) do
-			if unit['DeBuff'][buffname] then
-				unit['DeBuff'][buffname]:Destroy()
-			end
+			unit['DeBuff'][buffname]:Destroy()
 		end
 		unit['DeBuff'] = {}
 	end
 
 	if config['Buff'] then
 		for buffname, _ in pairs(config['Buff']) do
-			if unit['Buff'][buffname] then
-				unit['Buff'][buffname]:Destroy()
-			end
+			unit['Buff'][buffname]:Destroy()
 		end
 		unit['Buff'] = {}
 	end
 
 	if config['Cast'] then
 		for spellname, _ in pairs(config['Cast']) do
-			if unit['Cast'][spellname] then
-				unit['Cast'][spellname]:Destroy()
-			end
+			unit['Cast'][spellname]:Destroy()
 		end
 		unit['Cast'] = {}
 	end
 end
 
--- function GeneticAssist:HideUnit(unit)
--- 	local config = unit['config']
+function GeneticAssist:HideUnit(unit)
+	local config = unit['config']
 
--- 	if self.callbacks[unit['name']] and self.callbacks[unit['name']]['OnHide'] then
--- 		delete = self.callbacks[unit['name']]['OnHide'](unit)
--- 	end
+	if self.tCallbacks[unit['name']] and self.tCallbacks[unit['name']]['OnHide'] then
+		delete = self.tCallbacks[unit['name']]['OnHide'](unit)
+	end
 
--- 	if config['Line'] and unit['Line'] then
--- 		unit['Line']:Hide();
--- 	end
+	if config['Line'] then
+		unit['Line']:Hide()
+	end
 
--- 	if config['Circle'] and unit['Circle'] then
--- 		unit['Circle']:Hide();
--- 	end
+	if config['Circle'] then
+		unit['Circle']:Hide()
+	end
 
--- 	if config['Marker'] and unit['Marker'] then
--- 		unit['Marker']:Hide();
--- 	end
+	if config['Marker'] then
+		unit['Marker']:Hide()
+	end
 
--- 	if config['Notification'] and unit['Notification'] then
--- 		unit['Notification']:Hide();
--- 	end
+	if config['Notification'] then
+		unit['Notification']:Hide()
+	end
 
--- 	if config['DeBuff'] then
--- 		for buffname, _ in pairs(config['DeBuff']) do
--- 			if unit['DeBuff'][buffname] then
--- 				unit['DeBuff'][buffname]:Hide()
--- 			end
--- 		end
--- 	end
+	if config['DeBuff'] then
+		for buffname, _ in pairs(config['DeBuff']) do
+			unit['DeBuff'][buffname]:Hide()
+		end
+	end
 
--- 	if config['Buff'] then
--- 		for buffname, _ in pairs(config['Buff']) do
--- 			if unit['Buff'][buffname] then
--- 				unit['Buff'][buffname]:Hide()
--- 			end
--- 		end
--- 	end
+	if config['Buff'] then
+		for buffname, _ in pairs(config['Buff']) do
+			unit['Buff'][buffname]:Hide()
+		end
+	end
 
--- 	if config['Cast'] then
--- 		for spellname, _ in pairs(config['Cast']) do
--- 			if unit['Cast'][spellname] then
--- 				unit['Cast'][spellname]:Hide()
--- 			end
--- 		end
--- 	end
--- end
+	if config['Cast'] then
+		for spellname, _ in pairs(config['Cast']) do
+			unit['Cast'][spellname]:Hide()
+		end
+	end
+end
 
 function GeneticAssist:UpdateUnit(unit)
 	local config = unit['config']
 
-	if self.callbacks[unit['name']] and self.callbacks[unit['name']]['OnUpdate'] then
-		self.callbacks[unit['name']]['OnUpdate'](unit)
+	if self.tCallbacks[unit['name']] and self.tCallbacks[unit['name']]['OnUpdate'] then
+		self.tCallbacks[unit['name']]['OnUpdate'](unit)
 	end
 
 	if config['Line'] then
@@ -382,25 +331,80 @@ function GeneticAssist:UpdateUnit(unit)
 	end
 end
 
+
 -----------------------------------------------------------------------------------------------
--- Callbacks (used so encounters can bind to specific events)
+--   _____                          __  __                                                   _
+--  / ____|                        |  \/  |                                                 | |
+-- | |  __ _ __ ___  _   _ _ __    | \  / | __ _ _ __   __ _  __ _  ___ _ __ ___   ___ _ __ | |_
+-- | | |_ | '__/ _ \| | | | '_ \   | |\/| |/ _` | '_ \ / _` |/ _` |/ _ \ '_ ` _ \ / _ \ '_ \| __|
+-- | |__| | | | (_) | |_| | |_) |  | |  | | (_| | | | | (_| | (_| |  __/ | | | | |  __/ | | | |_
+--  \_____|_|  \___/ \__,_| .__/   |_|  |_|\__,_|_| |_|\__,_|\__, |\___|_| |_| |_|\___|_| |_|\__|
+--                        | |                                 __/ |
+--                        |_|                                |___/
 -----------------------------------------------------------------------------------------------
 
-function GeneticAssist:SetCallback(unitname, type, method)
-	if not self.callbacks[unitname] then
-		self.callbacks[unitname] = {}
-	end
+-- You've joined a group
+function GeneticAssist:OnGroupJoin()
+	self:UpdateGroup()
+end
 
-	self.callbacks[unitname][type] = method
+-- You've left a group
+function GeneticAssist:OnGroupLeft()
+  self.channelName = nil
+  self.channel = nil
+  self.tGroupMembers = {}
+end
+
+-- A member has joined your group
+function GeneticAssist:OnGroupAdd(strMemberName)
+	self:UpdateGroup()
+end
+
+-- A member has left your group
+function GeneticAssist:OnGroupRemove(strMemberName, eReason)
+  if eReason == GroupLib.RemoveReason.Disband then return; end
+	self.tGroupMembers[strMemberName] = nil
+end
+
+-- A member has been promoted to party leader
+function GeneticAssist:OnGroupMemberPromoted(strMemberName)
+	self.groupLeader = strMemberName
+	self.channelName = tostring(self.groupLeader .. "_GAA_Channel")
+	self.channel = ICCommLib.JoinChannel(self.channelName, "OnChanMessage", self)
+end
+
+function GeneticAssist:UpdateGroup()
+	for i = 1, GroupLib.GetMemberCount(), 1 do
+    local tGroupMember = GroupLib.GetGroupMember(i)
+    if tGroupMember.bIsLeader then
+    	self:OnGroupMemberPromoted(tGroupMember.strCharacterName)
+    end
+		self.tGroupMembers[tGroupMember.strCharacterName] = tGroupMember
+  end
+end
+
+function GeneticAssist:DebugGroup()
+	Print("Group Members:")
+  for name, member in pairs(self.tGroupMembers) do
+  	if member then
+  		Print("Group Member: "..name)
+  	end
+  end
 end
 
 -----------------------------------------------------------------------------------------------
--- Addon Communication
+--              _     _                 __  __                           _
+--     /\      | |   | |               |  \/  |                         (_)
+--    /  \   __| | __| | ___  _ __     | \  / | ___  ___ ___  __ _  __ _ _ _ __   __ _
+--   / /\ \ / _` |/ _` |/ _ \| '_ \    | |\/| |/ _ \/ __/ __|/ _` |/ _` | | '_ \ / _` |
+--  / ____ \ (_| | (_| | (_) | | | |   | |  | |  __/\__ \__ \ (_| | (_| | | | | | (_| |
+-- /_/    \_\__,_|\__,_|\___/|_| |_|   |_|  |_|\___||___/___/\__,_|\__, |_|_| |_|\__, |
+--                                                                  __/ |         __/ |
+--                                                                 |___/         |___/
 -----------------------------------------------------------------------------------------------
 
 function GeneticAssist:OnChanMessage(channel, message)
   if self.channelName ~= channel then return; end
-
 end
 
 function GeneticAssist:SendMessage(mSender, mType, mBody)
@@ -408,17 +412,6 @@ function GeneticAssist:SendMessage(mSender, mType, mBody)
   self.channel:SendMessage({ sender = mSender, type = mType, body = mBody })
 end
 
------------------------------------------------------------------------------------------------
--- Private Helper Methods
------------------------------------------------------------------------------------------------
-
--- function GetTableIndex(tbl, value)
--- 	for i, v in ipairs(tbl) do
--- 		if v == value then
--- 			return i;
--- 		end
--- 	end
--- end
 -----------------------------------------------------------------------------------------------
 -- Addon Object Creation & Initialization
 -----------------------------------------------------------------------------------------------

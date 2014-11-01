@@ -3,8 +3,16 @@ GeneticAssistUtil.__index = GeneticAssistUtil
 
 function GeneticAssistUtil:TableLength(tbl)
   local count = 0
-  for _ in pairs(tbl) do count = count + 1 end
+  for _, v in pairs(tbl) do
+    if v ~= nil then count = count + 1 end
+  end
   return count
+end
+
+function GeneticAssistUtil:GetTableIndex(tbl, value)
+  for i, v in ipairs(tbl) do
+    if v == value then return i; end
+  end
 end
 
 function GeneticAssistUtil:GetDistance(origin, target)
@@ -21,3 +29,4 @@ function GeneticAssistUtil:GetBuffList(unit, type)
   end
   return spells
 end
+

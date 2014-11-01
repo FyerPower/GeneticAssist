@@ -24,6 +24,24 @@ GeneticAssistConfig.Encounters = {
     ['Cast'] = {
       ['Repulse Field'] = 'GeneticAssistSprites:GeneticConsumption'
     },
+    ['Line'] = {
+      ['Thickness'] = 5,
+      ['Color'] = GeneticAssistConfig.Colors.white
+    },
+    ['Marker'] = {
+      ['Sprite'] = 'GeneticAssistSprites:Egg',
+      ['Color'] = GeneticAssistConfig.Colors.white,
+      ['Width'] = 48,
+      ['Height'] = 48
+    },
+    ['Circle'] = {
+      ['Resolution'] = 18,
+      ['Thickness'] = 4,
+      ['Color'] = GeneticAssistConfig.Colors.yellow,
+      ['Height'] = 1,
+      ['Outline'] = true,
+      ['Radius'] = 5
+    },
     ['SkipCombatCheck'] = false
   },
 
