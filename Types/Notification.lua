@@ -12,14 +12,6 @@ require "Sound"
 local Marker = GeneticAssistMarker
 local ApolloColor = ApolloColor
 
-local nScreenWidth, _ = Apollo.GetScreenSize()
--- local LocationX = 1866
--- local LocationY = 500
-local LocationX = nScreenWidth / 2
-local LocationY = 200
-local SizeX = 400
-local SizeY = 200
-
 -----------------------------------------------------------------------------------------------
 -- Code
 -----------------------------------------------------------------------------------------------
@@ -28,16 +20,16 @@ GeneticAssistNotification = {}
 GeneticAssistNotification.__index = GeneticAssistNotification
 GeneticAssistNotification.__call = function (cls, ...) return cls.new(...) end
 
-function GeneticAssistNotification.new(window, sprite, sound, isActive)
+function GeneticAssistNotification.new(window, sprite, sound, pos)
   local self = setmetatable({}, GeneticAssistNotification)
 
   self.window = window
   self.sprite = sprite
   self.sound = sound
-  self.isActive = (isActive == true)
+  self.isActive = false
 
-  self.marker = Marker.new(self.window, self.sprite, ApolloColor.new("ffffffff"), SizeX, SizeY, self.isActive, "ScreenLocation")
-  self.marker:Draw({x=LocationX, y=LocationY, z=0})
+  self.marker = Marker.new(self.window, self.sprite, ApolloColor.new("ffffffff"), pos.nWidth, pos.nHeight, self.isActive, "ScreenLocation")
+  self.marker:Draw({x=pos.nLeft, y=pos.nTop, z=0})
 
   return self
 end

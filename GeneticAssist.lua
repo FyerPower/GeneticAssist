@@ -28,7 +28,10 @@ local math       = math
 local table      = table
 local Print      = Print
 
-local GeminiDB   = Apollo.GetPackage("Gemini:DB-1.0").tPackage
+-- Packages
+local GeminiDB
+local GeminiLocale
+
 
 local Encounters = GeneticAssistConfig.Encounters
 local Util       = GeneticAssistUtil
@@ -37,10 +40,21 @@ local Util       = GeneticAssistUtil
 -- Initialization
 -----------------------------------------------------------------------------------------------
 
+local nScreenWidth, _ = Apollo.GetScreenSize()
+
+-- local GeneticAssist = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:NewAddon('GeneticAssist', false, {})
 local GeneticAssist = {
 	tCallbacks = {},
 	tUnits = {},
-	tGroupMembers = {}
+	tGroupMembers = {},
+	tSettings = {
+		tNotifications = {
+			nLeft = (nScreenWidth / 2),
+			nTop = 200,
+			nHeight = 256,
+			nWidth = 512
+		}
+	}
 }
 
 function GeneticAssist:new(o)
@@ -51,15 +65,35 @@ function GeneticAssist:new(o)
 end
 
 function GeneticAssist:Init()
-  Apollo.RegisterAddon(self, false, '', {})
+	local bHasConfigureFunction = false
+	local strConfigureButtonText = ""
+	local tDependencies = {
+		"Gemini:DB-1.0",
+		"Gemini:Locale-1.0"
+	}
+  Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
 end
 
 function GeneticAssist:OnLoad()
+	-- Load Packages
+	GeminiDB = Apollo.GetPackage("Gemini:DB-1.0").tPackage
+	GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
+
+	-- Register Slash
 	Apollo.RegisterSlashCommand("ga", "SlashCommand", self)
+
+	-- Load Sprite File
 	Apollo.LoadSprites("GeneticAssistSprites.xml")
+
+	-- Load Window
   self.xmlDoc = XmlDoc.CreateFromFile("GeneticAssist.xml")
   self.xmlDoc:RegisterCallback("OnDocumentReady", self)
-	self.db = GeminiDB:New(self, tDefaults)
+
+	-- Load Database
+	self.db = GeminiDB:New(self, {})
+
+	-- Load Locale
+	self.locale = GeminiLocale:GetLocale("GeneticAssist", true)
 end
 
 function GeneticAssist:OnDocumentReady()
@@ -82,6 +116,7 @@ function GeneticAssist:OnDocumentReady()
 end
 
 function GeneticAssist:SlashCommand()
+	self.options:Show()
 end
 
 -----------------------------------------------------------------------------------------------
@@ -102,7 +137,7 @@ function GeneticAssist:OnUnitCreated(tUnit)
 	local unitname = tUnit:GetName()
 	local config = Encounters[unitname]
 	if config and not self.tUnits[unitid] then
-		Print(unitid..": "..unitname.." ~ Created")
+		-- Print(unitid..": "..unitname.." ~ Created")
 		self.tUnits[unitid] = { ['unit'] = tUnit, ['name'] = unitname, ['config'] = config }
 		self:CreateUnit(self.tUnits[unitid])
 
@@ -131,7 +166,7 @@ function GeneticAssist:OnUnitDestroyed(tUnit)
 
 	local unitid = tUnit:GetId()
 	if self.tUnits[unitid] then
-		Print(unitid..": "..tUnit:GetName().." ~ Destroyed")
+		-- Print(unitid..": "..tUnit:GetName().." ~ Destroyed")
 		self:DestroyUnit(self.tUnits[unitid])
 		self.tUnits[unitid] = nil
 
@@ -170,24 +205,25 @@ function GeneticAssist:CreateUnit(unit)
 	end
 
 	if config['Notification'] then
-		unit['Notification'] = GeneticAssistNotification.new(self.gameOverlay, config['Notification'], nil, true);
+		unit['Notification'] = GeneticAssistNotification.new(self.gameOverlay, config['Notification'], nil, self.tSettings.tNotifications)
+		unit['Notification']:Show()
 	end
 
 	if config['DeBuff'] then
 		unit['DeBuff'] = {}
 		for buffname, sprite in pairs(config['DeBuff']) do
-			unit['DeBuff'][buffname] = GeneticAssistNotification.new(self.gameOverlay, sprite)
+			unit['DeBuff'][buffname] = GeneticAssistNotification.new(self.gameOverlay, sprite, nil, self.tSettings.tNotifications)
 		end
 	end
 
 	if config['Buff'] then
 		unit['Buff'] = {}
-		for buffname, sprite in pairs(config['Buff']) do unit['Buff'][buffname] = GeneticAssistNotification.new(self.gameOverlay, sprite) end
+		for buffname, sprite in pairs(config['Buff']) do unit['Buff'][buffname] = GeneticAssistNotification.new(self.gameOverlay, sprite, nil, self.tSettings.tNotifications) end
 	end
 
 	if config['Cast'] then
 		unit['Cast'] = {}
-		for spellname, sprite in pairs(config['Cast']) do unit['Cast'][spellname] = GeneticAssistNotification.new(self.gameOverlay, sprite) end
+		for spellname, sprite in pairs(config['Cast']) do unit['Cast'][spellname] = GeneticAssistNotification.new(self.gameOverlay, sprite, nil, self.tSettings.tNotifications) end
 	end
 end
 
@@ -369,7 +405,7 @@ end
 -- A member has been promoted to party leader
 function GeneticAssist:OnGroupMemberPromoted(strMemberName)
 	self.groupLeader = strMemberName
-	self.channelName = tostring(self.groupLeader .. "_GAA_Channel")
+	self.channelName = tostring(string.gsub(self.groupLeader, "%s+", "_") .. "_GA")
 	self.channel = ICCommLib.JoinChannel(self.channelName, "OnChanMessage", self)
 end
 
@@ -410,6 +446,27 @@ end
 function GeneticAssist:SendMessage(mSender, mType, mBody)
   if not self.channel then return; end
   self.channel:SendMessage({ sender = mSender, type = mType, body = mBody })
+end
+
+-----------------------------------------------------------------------------------------------
+--  ._____       ._.          .__  __.                                                 ._.
+--  |  __ \      | |          |  \/  |                                                 | |
+--  | |  | | __ _| |_ __ _    | \  / | __ _ _ __   __ _  __ _  ___ _ __ ___   ___ _ __ | |_.
+--  | |  | |/ _. | __/ _. |   | |\/| |/ _. | ._ \ / _. |/ _. |/ _ \ ._. ._ \ / _ \ ._ \| __|
+--  | |__| | (_| | || (_| |   | |  | | (_| | | | | (_| | (_| |  __/ | | | | |  __/ | | | |_.
+--  |_____/ \__,_|\__\__,_|   |_|  |_|\__,_|_| |_|\__,_|\__. |\___|_| |_| |_|\___|_| |_|\__|
+--                                                      .__/ |
+--                                                      |___/
+-----------------------------------------------------------------------------------------------
+
+function GeneticAssist:OnSave(eType)
+  if eType ~= GameLib.CodeEnumAddonSaveLevel.Character then return end
+  return self.tSettings
+end
+
+function GeneticAssist:OnRestore(eType, tSettings)
+  if eType ~= GameLib.CodeEnumAddonSaveLevel.Character then return end
+  self.tSettings = Util:MergeTables(self.tSettings, tSettings)
 end
 
 -----------------------------------------------------------------------------------------------

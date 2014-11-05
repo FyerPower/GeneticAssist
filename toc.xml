@@ -3,7 +3,8 @@
 
 	<!-- Libs -->
   <Script Name="libs\GeminiAddon.lua"/>
-	<Script Name="libs\GeminiDB-1.0.lua"/>
+  <Script Name="libs\GeminiDB-1.0.lua"/>
+	<Script Name="libs\GeminiLocale.lua"/>
 
   <!-- Types -->
   <Script Name="Types\Circle.lua"/>
@@ -15,8 +16,14 @@
   <Script Name="GeneticAssistConfig.lua"/>
   <Script Name="GeneticAssistUtil.lua"/>
 
+  <!-- Locale -->
+  <!-- <Script Name="Locale\deDE.lua"/> -->
+  <!-- <Script Name="Locale\enUS.lua"/> -->
+  <!-- <Script Name="Locale\frFR.lua"/> -->
+
   <!-- Main Script -->
   <Script Name="GeneticAssist.lua"/>
+  <Script Name="GeneticAssistOptions.lua"/>
 
   <!-- Encounters -->
   <Script Name="Encounters\X89.lua"/>
@@ -26,5 +33,6 @@
 
   <!-- XML -->
   <Form Name="GeneticAssist.xml"/>
+  <Form Name="GeneticAssistOptions.xml"/>
 
 </Addon>

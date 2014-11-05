@@ -26,7 +26,7 @@ local function X89Update(iUnit)
   local tPosVector= Vector3.New(tPos.x, tPos.y, tPos.z) -- why?
   local tFacing = iUnit['unit']:GetFacing()
   local tAngle = math.atan2(tFacing.x, tFacing.z)
-  iUnit.line:Draw(tPos, { x = (tPosVector.x + 120 * math.sin(tAngle)), y = tPosVector.y, z = (tPosVector.z + 120 * math.cos(tAngle))})
+  iUnit.line:Draw(tPos, { x = (tPosVector.x + 120 * math.sin(tAngle)), y = tPosVector.y, z = (tPosVector.z + 120 * math.cos(tAngle))}):Show()
 
   -- Update config for the circle
   iUnit['config']['Circle']['Color'] = Util:GetDistance(GameLib.GetPlayerUnit():GetPosition(), tPos) > 9 and Colors.yellow or Colors.red

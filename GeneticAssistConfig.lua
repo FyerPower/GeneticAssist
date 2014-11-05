@@ -17,7 +17,7 @@ GeneticAssistConfig.Colors = {
 
 
 GeneticAssistConfig.Encounters = {
-  ['Scarhide Tank'] = {
+  ['Weak Target Dummy'] = {
     ['Buff'] = {
       ['Bolster'] = "GeneticAssistSprites:EssenceRot"
     },
@@ -168,11 +168,13 @@ GeneticAssistConfig.Encounters = {
   -- Reactors ~ Numbered 1-3 (or count down the number left and give each a different color)
   -- Shield ~ "You've Been Choosen" Notification & Sound Effect
 
-  -- ['Noxmind the Insidious'] = {
-  --   ['Cast'] = {
-  --     ['Essence Rot'] = 'GeneticAssistSprites:EssenceRot'
-  --   }
-  -- },
+  ['Noxmind the Insidious'] = {
+    ['Cast'] = {
+      ['Essence Rot'] = 'GeneticAssistSprites:EssenceRot'
+    }
+  },
+
+  ['Dreadphage Ohmna'] = {},
 
   -----------
   -- TRASH --
