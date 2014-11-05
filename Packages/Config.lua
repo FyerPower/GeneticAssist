@@ -1,8 +1,8 @@
-GeneticAssistConfig = {}
+local Config = {}
 
 -- Colors are "AARRGGBB"
 local ApolloColor = ApolloColor
-GeneticAssistConfig.Colors = {
+Config.Colors = {
   red      = ApolloColor.new("ffc83900"), -- bomb
   cyan     = ApolloColor.new("ff188794"), -- ghost
   green    = ApolloColor.new("ff2ec017"), -- mask
@@ -16,8 +16,8 @@ GeneticAssistConfig.Colors = {
 }
 
 
-GeneticAssistConfig.Encounters = {
-  ['Weak Target Dummy'] = {
+Config.Encounters = {
+  ['Weak Target Dummyyy'] = {
     ['Buff'] = {
       ['Bolster'] = "GeneticAssistSprites:EssenceRot"
     },
@@ -26,18 +26,18 @@ GeneticAssistConfig.Encounters = {
     },
     ['Line'] = {
       ['Thickness'] = 5,
-      ['Color'] = GeneticAssistConfig.Colors.white
+      ['Color'] = Config.Colors.white
     },
     ['Marker'] = {
       ['Sprite'] = 'GeneticAssistSprites:Egg',
-      ['Color'] = GeneticAssistConfig.Colors.white,
+      ['Color'] = Config.Colors.white,
       ['Width'] = 48,
       ['Height'] = 48
     },
     ['Circle'] = {
       ['Resolution'] = 18,
       ['Thickness'] = 4,
-      ['Color'] = GeneticAssistConfig.Colors.yellow,
+      ['Color'] = Config.Colors.yellow,
       ['Height'] = 1,
       ['Outline'] = true,
       ['Radius'] = 5
@@ -50,7 +50,7 @@ GeneticAssistConfig.Encounters = {
     ['Circle'] = {
       ['Resolution'] = 18,
       ['Thickness'] = 4,
-      ['Color'] = GeneticAssistConfig.Colors.yellow,
+      ['Color'] = Config.Colors.yellow,
       ['Height'] = 1,
       ['Outline'] = true,
       ['Radius'] = 9
@@ -70,7 +70,7 @@ GeneticAssistConfig.Encounters = {
   ['Pustule'] = {
     ['Marker'] = {
       ['Sprite'] = 'GeneticAssistSprites:Egg',
-      ['Color'] = GeneticAssistConfig.Colors.white,
+      ['Color'] = Config.Colors.white,
       ['Width'] = 48,
       ['Height'] = 48
     }
@@ -89,7 +89,7 @@ GeneticAssistConfig.Encounters = {
     ['Notification'] = 'GeneticAssistSprites:Bubble',
     ['Line'] = {
       ['Thickness'] = 5,
-      ['Color'] = GeneticAssistConfig.Colors.white
+      ['Color'] = Config.Colors.white
     }
   },
 
@@ -128,11 +128,11 @@ GeneticAssistConfig.Encounters = {
   ['Destructo Contruct X'] = {
     ['Line'] = {
       ['Thickness'] = 5,
-      ['Color'] = GeneticAssistConfig.Colors.white
+      ['Color'] = Config.Colors.white
     },
     ['Marker'] = {
       ['Sprite'] = 'GeneticAssistSprites:Poison',
-      ['Color'] = GeneticAssistConfig.Colors.white,
+      ['Color'] = Config.Colors.white,
       ['Width'] = 64,
       ['Height'] = 64
     }
@@ -140,11 +140,11 @@ GeneticAssistConfig.Encounters = {
   ['Maintenance Construct C-5'] = {
     ['Line'] = {
       ['Thickness'] = 5,
-      ['Color'] = GeneticAssistConfig.Colors.white
+      ['Color'] = Config.Colors.white
     },
     ['Marker'] = {
       ['Sprite'] = 'GeneticAssistSprites:Potion',
-      ['Color'] = GeneticAssistConfig.Colors.white,
+      ['Color'] = Config.Colors.white,
       ['Width'] = 64,
       ['Height'] = 64
     }
@@ -155,11 +155,11 @@ GeneticAssistConfig.Encounters = {
   ['Detonation Bomb'] = {
     ['Line'] = {
       ['Thickness'] = 5,
-      ['Color'] = GeneticAssistConfig.Colors.white
+      ['Color'] = Config.Colors.white
     },
     ['Marker'] = {
       ['Sprite'] = 'GeneticAssistSprites:Bomb',
-      ['Color'] = GeneticAssistConfig.Colors.white,
+      ['Color'] = Config.Colors.white,
       ['Width'] = 36,
       ['Height'] = 36
     }
@@ -198,3 +198,5 @@ GeneticAssistConfig.Encounters = {
     }
   }
 }
+
+Apollo.RegisterPackage(Config, "GeneticAssist:Config", 1, {})

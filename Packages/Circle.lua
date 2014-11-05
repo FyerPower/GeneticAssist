@@ -20,12 +20,16 @@ local math = math
 -- Code
 -----------------------------------------------------------------------------------------------
 
-GeneticAssistCircle = {}
-GeneticAssistCircle.__index = GeneticAssistCircle
-GeneticAssistCircle.__call = function(cls, ...) return cls.new(...) end
+local Circle = {}
+Circle.__index = Circle
+setmetatable(Circle, {
+  __call = function (cls, ...)
+    return cls.new(...)
+  end
+})
 
-function GeneticAssistCircle.new(window, resolution, thickness, color, height, outline)
-  local self = setmetatable({}, GeneticAssistCircle)
+function Circle.new(window, resolution, thickness, color, height, outline)
+  local self = setmetatable({}, Circle)
 
   self.window = window
   self.resolution = resolution or 18
@@ -59,7 +63,7 @@ function GeneticAssistCircle.new(window, resolution, thickness, color, height, o
   return self
 end
 
-function GeneticAssistCircle:Draw(origin, distance, angle, color)
+function Circle:Draw(origin, distance, angle, color)
   if self.isActive == false then return end
   for i = 1, self.height do
     local originVector = Vector3.New(origin.x, origin.y+((i-1)*0.5), origin.z)
@@ -77,18 +81,18 @@ function GeneticAssistCircle:Draw(origin, distance, angle, color)
   end
 end
 
-function GeneticAssistCircle:Show()
+function Circle:Show()
   if self.isActive == true then return end
 
   self.isActive = true
 end
-function GeneticAssistCircle:Hide()
+function Circle:Hide()
   if self.isActive == false then return end
   self:Draw({x=-100, y=-100, z=-100}, 0, 0, self.color)
   self.isActive = false
 end
 
-function GeneticAssistCircle:Destroy()
+function Circle:Destroy()
   for i = 1, self.height do
     for j = 1, self.resolution do
       if self.showOutline and self.outline[i] and self.outline[i][j] then
@@ -102,3 +106,6 @@ function GeneticAssistCircle:Destroy()
   self.outline = {}
   self.circle = {}
 end
+
+-- Register Package
+Apollo.RegisterPackage(Circle, "GeneticAssist:Circle", 1, {})

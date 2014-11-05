@@ -7,23 +7,23 @@
 	<Script Name="libs\GeminiLocale.lua"/>
 
   <!-- Types -->
-  <Script Name="Types\Circle.lua"/>
-  <Script Name="Types\Line.lua"/>
-  <Script Name="Types\Marker.lua"/>
-  <Script Name="Types\Notification.lua"/>
+  <Script Name="Packages\Circle.lua"/>
+  <Script Name="Packages\Line.lua"/>
+  <Script Name="Packages\Marker.lua"/>
+  <Script Name="Packages\Notification.lua"/>
 
   <!-- Config / Utility -->
-  <Script Name="GeneticAssistConfig.lua"/>
-  <Script Name="GeneticAssistUtil.lua"/>
+  <Script Name="Packages\Config.lua"/>
+  <Script Name="Packages\Util.lua"/>
 
   <!-- Locale -->
-  <!-- <Script Name="Locale\deDE.lua"/> -->
-  <!-- <Script Name="Locale\enUS.lua"/> -->
-  <!-- <Script Name="Locale\frFR.lua"/> -->
+  <Script Name="Locale\deDE.lua"/>
+  <Script Name="Locale\enUS.lua"/>
+  <Script Name="Locale\frFR.lua"/>
 
   <!-- Main Script -->
   <Script Name="GeneticAssist.lua"/>
-  <Script Name="GeneticAssistOptions.lua"/>
+  <Script Name="Options.lua"/>
 
   <!-- Encounters -->
   <Script Name="Encounters\X89.lua"/>
@@ -33,6 +33,6 @@
 
   <!-- XML -->
   <Form Name="GeneticAssist.xml"/>
-  <Form Name="GeneticAssistOptions.xml"/>
+  <Form Name="Options.xml"/>
 
 </Addon>

@@ -16,12 +16,16 @@ local ApolloColor = ApolloColor
 -- Code
 -----------------------------------------------------------------------------------------------
 
-GeneticAssistNotification = {}
-GeneticAssistNotification.__index = GeneticAssistNotification
-GeneticAssistNotification.__call = function (cls, ...) return cls.new(...) end
+local Notification = {}
+Notification.__index = Notification
+setmetatable(Notification, {
+  __call = function (cls, ...)
+    return cls.new(...)
+  end
+})
 
-function GeneticAssistNotification.new(window, sprite, sound, pos)
-  local self = setmetatable({}, GeneticAssistNotification)
+function Notification.new(window, sprite, sound, pos)
+  local self = setmetatable({}, Notification)
 
   self.window = window
   self.sprite = sprite
@@ -34,7 +38,7 @@ function GeneticAssistNotification.new(window, sprite, sound, pos)
   return self
 end
 
-function GeneticAssistNotification:Active(isActive)
+function Notification:Active(isActive)
   isActive = (isActive == true)
   if isActive == true and self.isActive == false then
     self:Show()
@@ -44,22 +48,30 @@ function GeneticAssistNotification:Active(isActive)
   end
 end
 
-function GeneticAssistNotification:Show()
+function Notification:Show()
   if self.isActive == true then return end
   self.marker:Show()
   if self.sound then Sound.Play(tonumber(self.sound)) end
   self.isActive = true
 end
-function GeneticAssistNotification:Hide()
+function Notification:Hide()
   if self.isActive == false then return end
   self.marker:Hide()
   self.isActive = false
 end
 
-
-function GeneticAssistNotification:Destroy()
+function Notification:Destroy()
   self.marker:Destroy()
 end
+
+-- Register Package
+Apollo.RegisterPackage(Notification, "GeneticAssist:Notification", 1, {})
+
+
+
+
+
+
 
 
 -- PlayRingtoneSoldier

@@ -44,7 +44,7 @@ function GeneticAssistOptions:Show()
   self.settings = GeneticAssist.settings
 
   if self.xmlDoc == nil then
-    self.xmlDoc = XmlDoc.CreateFromFile("GeneticAssistOptions.xml")
+    self.xmlDoc = XmlDoc.CreateFromFile("Options.xml")
     self.wndOpt = Apollo.LoadForm(self.xmlDoc, "GeneticAssistOptions", nil, self)
     self:BuildOptionsWindow()
     self:BuildOptionsList()

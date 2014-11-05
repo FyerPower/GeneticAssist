@@ -13,13 +13,17 @@ require "Window"
 -- Code
 -----------------------------------------------------------------------------------------------
 
-GeneticAssistMarker = {}
-GeneticAssistMarker.__index = GeneticAssistMarker
-GeneticAssistMarker.__call = function (cls, ...) return cls.new(...) end
+local Marker = {}
+Marker.__index = Marker
+setmetatable(Marker, {
+  __call = function (cls, ...)
+    return cls.new(...)
+  end
+})
 
--- GeneticAssistMarker(self.gameOverlay, "PerspectiveSprites:NPC-Elite", ApolloColor.new('ffffff00'), 36, 36, true, "ScreenLocation" )
-function GeneticAssistMarker.new(window, sprite, color, width, height, display, positionType)
-  local self = setmetatable({}, GeneticAssistMarker)
+-- Marker(self.gameOverlay, "PerspectiveSprites:NPC-Elite", ApolloColor.new('ffffff00'), 36, 36, true, "ScreenLocation" )
+function Marker.new(window, sprite, color, width, height, display, positionType)
+  local self = setmetatable({}, Marker)
 
   self.window = window
   self.sprite = sprite
@@ -42,7 +46,7 @@ function GeneticAssistMarker.new(window, sprite, color, width, height, display, 
   return self
 end
 
-function GeneticAssistMarker:Draw(position)
+function Marker:Draw(position)
   self.position = position
 
   if self.positionType == "WorldLocation" then
@@ -67,18 +71,21 @@ function GeneticAssistMarker:Draw(position)
   return self; -- chainable
 end
 
-function GeneticAssistMarker:Hide()
+function Marker:Hide()
   if not self.display then return; end
   self.display = false
   self:Draw(self.position)
 end
 
-function GeneticAssistMarker:Show()
+function Marker:Show()
   if self.display then return; end
   self.display = true
   self:Draw(self.position)
 end
 
-function GeneticAssistMarker:Destroy()
+function Marker:Destroy()
   self.window:DestroyPixie( self.marker )
 end
+
+-- Register Package
+Apollo.RegisterPackage(Marker, "GeneticAssist:Marker", 1, {})

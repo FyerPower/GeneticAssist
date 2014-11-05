@@ -32,7 +32,6 @@ end
 
 -- ~'*`~-~'*`~-~'*`~-~'*`~-~'*`~-~'*`~-~'*`~ --
 
---
 GA:SetCallback('Noxmind the Insidious', 'OnCreate',  NoxmindCreate)
 GA:SetCallback('Noxmind the Insidious', 'OnDestroy', NoxmindDestroy)
 GA:SetCallback('Noxmind the Insidious', 'OnHide',    NoxmindHide)

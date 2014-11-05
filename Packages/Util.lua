@@ -1,11 +1,13 @@
-GeneticAssistUtil = {}
-GeneticAssistUtil.__index = GeneticAssistUtil
+Util = {}
+Util.__index = Util
 
-function GeneticAssistUtil:GetDistance(origin, target)
+-- Get the distance between two points
+function Util:GetDistance(origin, target)
   return math.sqrt( math.pow(target.x - origin.x, 2) + math.pow(target.y - origin.y, 2) + math.pow(target.z - origin.z, 2) )
 end
 
-function GeneticAssistUtil:GetBuffList(unit, type)
+-- Get an associative array of all buffs (or debuffs) on a unit
+function Util:GetBuffList(unit, type)
   local spells = {}
   local pBuffs = unit:GetBuffs()[type]
   if pBuffs then
@@ -16,7 +18,8 @@ function GeneticAssistUtil:GetBuffList(unit, type)
   return spells
 end
 
-function GeneticAssistUtil:TableLength(tbl)
+-- Returns the lenght of an assoicative table
+function Util:TableLength(tbl)
   local count = 0
   for _, v in pairs(tbl) do
     if v ~= nil then count = count + 1 end
@@ -24,13 +27,8 @@ function GeneticAssistUtil:TableLength(tbl)
   return count
 end
 
-function GeneticAssistUtil:GetTableIndex(tbl, value)
-  for i, v in ipairs(tbl) do
-    if v == value then return i; end
-  end
-end
-
-function GeneticAssistUtil:MergeTables(t1, t2)
+-- Merge two tables together
+function Util:MergeTables(t1, t2)
   for k, v in pairs(t2) do
     if type(v) == "table" then
     if t1[k] then
@@ -50,4 +48,5 @@ function GeneticAssistUtil:MergeTables(t1, t2)
   return t1
 end
 
--- Apollo.RegisterPackage(GeneticAssistUtil, "GeneticAssistUtil:Utilities", 1, {})
+-- Register Package
+Apollo.RegisterPackage(Util, "GeneticAssist:Utilities", 1, {})

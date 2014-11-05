@@ -20,12 +20,16 @@ local math = math
 -- Code
 -----------------------------------------------------------------------------------------------
 
-GeneticAssistLine = {}
-GeneticAssistLine.__index = GeneticAssistLine
-GeneticAssistLine.__call = function (cls, ...) return cls.new(...) end
+local Line = {}
+Line.__index = Line
+setmetatable(Line, {
+  __call = function (cls, ...)
+    return cls.new(...)
+  end
+})
 
-function GeneticAssistLine.new(lWindow, lType, lColor, lSize, lOutline)
-  local self = setmetatable({}, GeneticAssistLine)
+function Line.new(lWindow, lType, lColor, lSize, lOutline)
+  local self = setmetatable({}, Line)
 
   self.window = lWindow
   self.type = lType or "solid"
@@ -44,7 +48,7 @@ function GeneticAssistLine.new(lWindow, lType, lColor, lSize, lOutline)
   return self
 end
 
-function GeneticAssistLine:Draw(origin, destination)
+function Line:Draw(origin, destination)
   self.origin = origin
   self.destination = destination
 
@@ -62,21 +66,24 @@ function GeneticAssistLine:Draw(origin, destination)
   return self; -- Chainable
 end
 
-function GeneticAssistLine:Hide()
+function Line:Hide()
   if not self.display then return; end
   self.display = false
   self:Draw({x=0,y=0,z=0}, {x=0,y=0,z=0})
 end
 
-function GeneticAssistLine:Show()
+function Line:Show()
   if self.display then return; end
   self.display = true
   self:Draw(self.origin, self.destination)
 end
 
-function GeneticAssistLine:Destroy()
+function Line:Destroy()
   if self.showOutline then
     self.window:DestroyPixie(self.outline)
   end
   self.window:DestroyPixie(self.line)
 end
+
+-- Register Package
+Apollo.RegisterPackage(Line, "GeneticAssist:Line", 1, {})

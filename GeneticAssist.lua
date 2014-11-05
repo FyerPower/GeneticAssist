@@ -18,23 +18,25 @@ require "ICCommLib"
 -- Performance Boost: Redefine global functions locally
 -----------------------------------------------------------------------------------------------
 
-local GameLib    = GameLib
-local ICCommLib  = ICCommLib
-local Apollo     = Apollo
-local Vector3    = Vector3
-local pairs      = pairs
-local ipairs     = ipairs
-local math       = math
-local table      = table
-local Print      = Print
+local Apollo    = Apollo
+local GameLib   = GameLib
+local ICCommLib = ICCommLib
+local Vector3   = Vector3
+local pairs     = pairs
+local ipairs    = ipairs
+local math      = math
+local table     = table
+local Print     = Print
 
 -- Packages
 local GeminiDB
 local GeminiLocale
-
-
-local Encounters = GeneticAssistConfig.Encounters
-local Util       = GeneticAssistUtil
+local Encounters
+local Util
+local Line
+local Marker
+local Circle
+local Notification
 
 -----------------------------------------------------------------------------------------------
 -- Initialization
@@ -69,21 +71,33 @@ function GeneticAssist:Init()
 	local strConfigureButtonText = ""
 	local tDependencies = {
 		"Gemini:DB-1.0",
-		"Gemini:Locale-1.0"
+		"Gemini:Locale-1.0",
+		"GeneticAssist:Config",
+		"GeneticAssist:Util",
+		"GeneticAssist:Line",
+		"GeneticAssist:Circle",
+		"GeneticAssist:Marker",
+		"GeneticAssist:Notification"
 	}
   Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
 end
 
 function GeneticAssist:OnLoad()
 	-- Load Packages
-	GeminiDB = Apollo.GetPackage("Gemini:DB-1.0").tPackage
+	GeminiDB     = Apollo.GetPackage("Gemini:DB-1.0").tPackage
 	GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
+	Encounters   = Apollo.GetPackage("GeneticAssist:Config").tPackage.Encounters
+	Util         = Apollo.GetPackage("GeneticAssist:Util").tPackage
+	Line         = Apollo.GetPackage("GeneticAssist:Line").tPackage
+	Circle       = Apollo.GetPackage("GeneticAssist:Circle").tPackage
+	Marker       = Apollo.GetPackage("GeneticAssist:Marker").tPackage
+	Notification = Apollo.GetPackage("GeneticAssist:Notification").tPackage
 
 	-- Register Slash
 	Apollo.RegisterSlashCommand("ga", "SlashCommand", self)
 
 	-- Load Sprite File
-	Apollo.LoadSprites("GeneticAssistSprites.xml")
+	Apollo.LoadSprites("Sprites.xml")
 
 	-- Load Window
   self.xmlDoc = XmlDoc.CreateFromFile("GeneticAssist.xml")
@@ -177,10 +191,21 @@ function GeneticAssist:OnUnitDestroyed(tUnit)
 end
 
 -- Callbacks (used so encounters can bind to specific events)
+function GeneticAssist:SetEncounter(unitname, config)
+	-- if we're sending it nothing and our encounter already exists, lets not override it
+	if config == nil and Encounters[unitname] ~= nil then return end
+
+	-- Add encounter configs
+	Encounters[unitname] = config or {}
+end
+
 function GeneticAssist:SetCallback(unitname, type, method)
-	if not self.tCallbacks[unitname] then
-		self.tCallbacks[unitname] = {}
-	end
+	if not self.tCallbacks[unitname] then self.tCallbacks[unitname] = {} end
+
+	-- Verify we have an encounter
+	self:SetEncounter(unitname, config)
+
+	-- Set Callback
 	self.tCallbacks[unitname][type] = method
 end
 
@@ -193,37 +218,37 @@ function GeneticAssist:CreateUnit(unit)
 	end
 
 	if config['Line'] then
-		unit['Line'] = GeneticAssistLine.new(self.gameOverlay, 'solid', config['Line']['Color'], config['Line']['Thickness'], true);
+		unit['Line'] = Line(self.gameOverlay, 'solid', config['Line']['Color'], config['Line']['Thickness'], true);
 	end
 
 	if config['Circle'] then
-		unit['Circle'] = GeneticAssistCircle.new(self.gameOverlay, config['Circle']['Resolution'], config['Circle']['Thickness'], config['Circle']['Color'], config['Circle']['Height'], config['Circle']['Outline']);
+		unit['Circle'] = Circle(self.gameOverlay, config['Circle']['Resolution'], config['Circle']['Thickness'], config['Circle']['Color'], config['Circle']['Height'], config['Circle']['Outline']);
 	end
 
 	if config['Marker'] then
-		unit['Marker'] = GeneticAssistMarker.new(self.gameOverlay, config['Marker']['Sprite'], config['Marker']['Color'], config['Marker']['Width'], config['Marker']['Height'], true);
+		unit['Marker'] = Marker(self.gameOverlay, config['Marker']['Sprite'], config['Marker']['Color'], config['Marker']['Width'], config['Marker']['Height'], true);
 	end
 
 	if config['Notification'] then
-		unit['Notification'] = GeneticAssistNotification.new(self.gameOverlay, config['Notification'], nil, self.tSettings.tNotifications)
+		unit['Notification'] = Notification(self.gameOverlay, config['Notification'], nil, self.tSettings.tNotifications)
 		unit['Notification']:Show()
 	end
 
 	if config['DeBuff'] then
 		unit['DeBuff'] = {}
 		for buffname, sprite in pairs(config['DeBuff']) do
-			unit['DeBuff'][buffname] = GeneticAssistNotification.new(self.gameOverlay, sprite, nil, self.tSettings.tNotifications)
+			unit['DeBuff'][buffname] = Notification(self.gameOverlay, sprite, nil, self.tSettings.tNotifications)
 		end
 	end
 
 	if config['Buff'] then
 		unit['Buff'] = {}
-		for buffname, sprite in pairs(config['Buff']) do unit['Buff'][buffname] = GeneticAssistNotification.new(self.gameOverlay, sprite, nil, self.tSettings.tNotifications) end
+		for buffname, sprite in pairs(config['Buff']) do unit['Buff'][buffname] = Notification(self.gameOverlay, sprite, nil, self.tSettings.tNotifications) end
 	end
 
 	if config['Cast'] then
 		unit['Cast'] = {}
-		for spellname, sprite in pairs(config['Cast']) do unit['Cast'][spellname] = GeneticAssistNotification.new(self.gameOverlay, sprite, nil, self.tSettings.tNotifications) end
+		for spellname, sprite in pairs(config['Cast']) do unit['Cast'][spellname] = Notification(self.gameOverlay, sprite, nil, self.tSettings.tNotifications) end
 	end
 end
 
