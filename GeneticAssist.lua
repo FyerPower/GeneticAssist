@@ -49,12 +49,14 @@ local GeneticAssist = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:NewAddon('G
 GeneticAssist.tCallbacks = {}
 GeneticAssist.tUnits = {}
 GeneticAssist.tGroupMembers = {}
-GeneticAssist.tSettings = {
-	tNotifications = {
-		nLeft = (nScreenWidth / 2),
-		nTop = 200,
-		nHeight = 256,
-		nWidth = 512
+local tDefaultSettings = {
+	global = {
+		tNotifications = {
+			nLeft = (nScreenWidth / 2),
+			nTop = 200,
+			nHeight = 256,
+			nWidth = 512
+		}
 	}
 }
 
@@ -82,7 +84,7 @@ function GeneticAssist:OnInitialize()
   self.xmlDoc:RegisterCallback("OnDocumentReady", self)
 
 	-- Load Database
-	self.db = GeminiDB:New(self, {})
+	self.db = GeminiDB:New(self, tDefaultSettings)
 
 	-- Load Locale
 	self.locale = GeminiLocale:GetLocale("GeneticAssist", true)
@@ -214,25 +216,25 @@ function GeneticAssist:CreateUnit(unit)
 	end
 
 	if config['Notification'] then
-		unit['Notification'] = Notification(self.gameOverlay, config['Notification'], nil, self.tSettings.tNotifications)
+		unit['Notification'] = Notification(self.gameOverlay, config['Notification'], nil, self.db.global.tNotifications)
 		unit['Notification']:Show()
 	end
 
 	if config['DeBuff'] then
 		unit['DeBuff'] = {}
 		for buffname, sprite in pairs(config['DeBuff']) do
-			unit['DeBuff'][buffname] = Notification(self.gameOverlay, sprite, nil, self.tSettings.tNotifications)
+			unit['DeBuff'][buffname] = Notification(self.gameOverlay, sprite, nil, self.db.global.tNotifications)
 		end
 	end
 
 	if config['Buff'] then
 		unit['Buff'] = {}
-		for buffname, sprite in pairs(config['Buff']) do unit['Buff'][buffname] = Notification(self.gameOverlay, sprite, nil, self.tSettings.tNotifications) end
+		for buffname, sprite in pairs(config['Buff']) do unit['Buff'][buffname] = Notification(self.gameOverlay, sprite, nil, self.db.global.tNotifications) end
 	end
 
 	if config['Cast'] then
 		unit['Cast'] = {}
-		for spellname, sprite in pairs(config['Cast']) do unit['Cast'][spellname] = Notification(self.gameOverlay, sprite, nil, self.tSettings.tNotifications) end
+		for spellname, sprite in pairs(config['Cast']) do unit['Cast'][spellname] = Notification(self.gameOverlay, sprite, nil, self.db.global.tNotifications) end
 	end
 end
 
@@ -449,25 +451,4 @@ end
 function GeneticAssist:SendMessage(mSender, mType, mBody)
   if not self.channel then return; end
   self.channel:SendMessage({ sender = mSender, type = mType, body = mBody })
-end
-
------------------------------------------------------------------------------------------------
---  ._____       ._.          .__  __.                                                 ._.
---  |  __ \      | |          |  \/  |                                                 | |
---  | |  | | __ _| |_ __ _    | \  / | __ _ _ __   __ _  __ _  ___ _ __ ___   ___ _ __ | |_.
---  | |  | |/ _. | __/ _. |   | |\/| |/ _. | ._ \ / _. |/ _. |/ _ \ ._. ._ \ / _ \ ._ \| __|
---  | |__| | (_| | || (_| |   | |  | | (_| | | | | (_| | (_| |  __/ | | | | |  __/ | | | |_.
---  |_____/ \__,_|\__\__,_|   |_|  |_|\__,_|_| |_|\__,_|\__. |\___|_| |_| |_|\___|_| |_|\__|
---                                                      .__/ |
---                                                      |___/
------------------------------------------------------------------------------------------------
-
-function GeneticAssist:OnSave(eType)
-  if eType ~= GameLib.CodeEnumAddonSaveLevel.Character then return end
-  return self.tSettings
-end
-
-function GeneticAssist:OnRestore(eType, tSettings)
-  if eType ~= GameLib.CodeEnumAddonSaveLevel.Character then return end
-  self.tSettings = Util:MergeTables(self.tSettings, tSettings)
 end
