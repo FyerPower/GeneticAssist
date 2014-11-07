@@ -38,56 +38,34 @@ local Marker
 local Circle
 local Notification
 
+local nScreenWidth, _ = Apollo.GetScreenSize()
+
 -----------------------------------------------------------------------------------------------
 -- Initialization
 -----------------------------------------------------------------------------------------------
 
-local nScreenWidth, _ = Apollo.GetScreenSize()
+local GeneticAssist = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:NewAddon('GeneticAssist', false, { "Gemini:DB-1.0", "Gemini:Locale-1.0", "GeneticAssist:Config", "GeneticAssist:Utilities", "GeneticAssist:Line", "GeneticAssist:Circle", "GeneticAssist:Marker", "GeneticAssist:Notification" })
 
--- local GeneticAssist = Apollo.GetPackage("Gemini:Addon-1.1").tPackage:NewAddon('GeneticAssist', false, {})
-local GeneticAssist = {
-	tCallbacks = {},
-	tUnits = {},
-	tGroupMembers = {},
-	tSettings = {
-		tNotifications = {
-			nLeft = (nScreenWidth / 2),
-			nTop = 200,
-			nHeight = 256,
-			nWidth = 512
-		}
+GeneticAssist.tCallbacks = {}
+GeneticAssist.tUnits = {}
+GeneticAssist.tGroupMembers = {}
+GeneticAssist.tSettings = {
+	tNotifications = {
+		nLeft = (nScreenWidth / 2),
+		nTop = 200,
+		nHeight = 256,
+		nWidth = 512
 	}
 }
 
-function GeneticAssist:new(o)
-  o = o or {}
-  setmetatable(o, self)
-  self.__index = self
-  return o
-end
-
-function GeneticAssist:Init()
-	local bHasConfigureFunction = false
-	local strConfigureButtonText = ""
-	local tDependencies = {
-		"Gemini:DB-1.0",
-		"Gemini:Locale-1.0",
-		"GeneticAssist:Config",
-		"GeneticAssist:Util",
-		"GeneticAssist:Line",
-		"GeneticAssist:Circle",
-		"GeneticAssist:Marker",
-		"GeneticAssist:Notification"
-	}
-  Apollo.RegisterAddon(self, bHasConfigureFunction, strConfigureButtonText, tDependencies)
-end
-
-function GeneticAssist:OnLoad()
+function GeneticAssist:OnInitialize()
 	-- Load Packages
 	GeminiDB     = Apollo.GetPackage("Gemini:DB-1.0").tPackage
 	GeminiLocale = Apollo.GetPackage("Gemini:Locale-1.0").tPackage
-	Encounters   = Apollo.GetPackage("GeneticAssist:Config").tPackage.Encounters
-	Util         = Apollo.GetPackage("GeneticAssist:Util").tPackage
+	Config       = Apollo.GetPackage("GeneticAssist:Config").tPackage
+	Colors       = Config.Colors
+	Encounters   = Config.Encounters
+	Util         = Apollo.GetPackage("GeneticAssist:Utilities").tPackage
 	Line         = Apollo.GetPackage("GeneticAssist:Line").tPackage
 	Circle       = Apollo.GetPackage("GeneticAssist:Circle").tPackage
 	Marker       = Apollo.GetPackage("GeneticAssist:Marker").tPackage
@@ -199,23 +177,29 @@ function GeneticAssist:SetEncounter(unitname, config)
 	Encounters[unitname] = config or {}
 end
 
-function GeneticAssist:SetCallback(unitname, type, method)
+function GeneticAssist:RegisterUnitCallback(unitname, type, method, scope)
 	if not self.tCallbacks[unitname] then self.tCallbacks[unitname] = {} end
 
 	-- Verify we have an encounter
 	self:SetEncounter(unitname, config)
 
 	-- Set Callback
-	self.tCallbacks[unitname][type] = method
+	self.tCallbacks[unitname][type] = { ['Method'] = method, ['Scope'] = scope }
 end
 
+function GeneticAssist:FireUnitCallback(unit, type)
+	if self.tCallbacks[unit['name']] and self.tCallbacks[unit['name']][type] then
+		local scope = self.tCallbacks[unit['name']][type]['Scope']
+		local method = self.tCallbacks[unit['name']][type]['Method']
+
+		scope[method](scope, unit)
+	end
+end
 
 function GeneticAssist:CreateUnit(unit)
 	local config = unit['config']
 
-	if self.tCallbacks[unit['name']] and self.tCallbacks[unit['name']]['OnCreate'] then
-		self.tCallbacks[unit['name']]['OnCreate'](unit)
-	end
+	self:FireUnitCallback(unit, 'OnCreate')
 
 	if config['Line'] then
 		unit['Line'] = Line(self.gameOverlay, 'solid', config['Line']['Color'], config['Line']['Thickness'], true);
@@ -256,9 +240,7 @@ end
 function GeneticAssist:DestroyUnit(unit)
 	local config = unit['config']
 
-	if self.tCallbacks[unit['name']] and self.tCallbacks[unit['name']]['OnDestroy'] then
-		self.tCallbacks[unit['name']]['OnDestroy'](unit)
-	end
+	self:FireUnitCallback(unit, 'OnDestroy')
 
 	if config['Line'] then
 		unit['Line']:Destroy()
@@ -301,9 +283,7 @@ end
 function GeneticAssist:HideUnit(unit)
 	local config = unit['config']
 
-	if self.tCallbacks[unit['name']] and self.tCallbacks[unit['name']]['OnHide'] then
-		delete = self.tCallbacks[unit['name']]['OnHide'](unit)
-	end
+	self:FireUnitCallback(unit, 'OnHide')
 
 	if config['Line'] then
 		unit['Line']:Hide()
@@ -343,9 +323,7 @@ end
 function GeneticAssist:UpdateUnit(unit)
 	local config = unit['config']
 
-	if self.tCallbacks[unit['name']] and self.tCallbacks[unit['name']]['OnUpdate'] then
-		self.tCallbacks[unit['name']]['OnUpdate'](unit)
-	end
+	self:FireUnitCallback(unit, 'OnUpdate')
 
 	if config['Line'] then
 		unit['Line']:Show()
@@ -493,12 +471,3 @@ function GeneticAssist:OnRestore(eType, tSettings)
   if eType ~= GameLib.CodeEnumAddonSaveLevel.Character then return end
   self.tSettings = Util:MergeTables(self.tSettings, tSettings)
 end
-
------------------------------------------------------------------------------------------------
--- Addon Object Creation & Initialization
------------------------------------------------------------------------------------------------
-
-local GeneticAssistInstance = GeneticAssist:new()
-GeneticAssistInstance:Init()
-
-_G['GeneticAssist'] = GeneticAssistInstance

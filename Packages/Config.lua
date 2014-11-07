@@ -17,7 +17,7 @@ Config.Colors = {
 
 
 Config.Encounters = {
-  ['Weak Target Dummyyy'] = {
+  ['Weak Target Dummy'] = {
     ['Buff'] = {
       ['Bolster'] = "GeneticAssistSprites:EssenceRot"
     },
@@ -45,27 +45,6 @@ Config.Encounters = {
     ['SkipCombatCheck'] = false
   },
 
-  -- [✓] BOSS: Experiment X-89
-  ['Experiment X-89'] = {
-    ['Circle'] = {
-      ['Resolution'] = 18,
-      ['Thickness'] = 4,
-      ['Color'] = Config.Colors.yellow,
-      ['Height'] = 1,
-      ['Outline'] = true,
-      ['Radius'] = 9
-    },
-    ['DeBuff'] = {
-      ['Corruption Globule'] = "GeneticAssistSprites:SmallBomb",
-      ['Strain Bomb'] = "GeneticAssistSprites:BigBomb"
-    }
-  },
-
-  -- [✓] BOSS: Kuralak the Defiler
-  ['Kuralak the Defiler'] = {
-    ['SkipCombatCheck'] = true
-  },
-
   -- [✓] MINIBOSS: Genetic Monstrosity
   ['Pustule'] = {
     ['Marker'] = {
@@ -73,7 +52,8 @@ Config.Encounters = {
       ['Color'] = Config.Colors.white,
       ['Width'] = 48,
       ['Height'] = 48
-    }
+    },
+    ['SkipCombatCheck'] = true
   },
 
   -- [  ] MINIBOSS: Hideous Malformed Mutant
@@ -168,13 +148,7 @@ Config.Encounters = {
   -- Reactors ~ Numbered 1-3 (or count down the number left and give each a different color)
   -- Shield ~ "You've Been Choosen" Notification & Sound Effect
 
-  ['Noxmind the Insidious'] = {
-    ['Cast'] = {
-      ['Essence Rot'] = 'GeneticAssistSprites:EssenceRot'
-    }
-  },
 
-  ['Dreadphage Ohmna'] = {},
 
   -----------
   -- TRASH --

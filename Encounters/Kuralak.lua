@@ -1,61 +1,83 @@
-local GameLib = GameLib
-local Colors  = GeneticAssistConfig.Colors
-local Util    = GeneticAssistUtil
-local GA      = GeneticAssist
+-----------------------------------------------------------------------------------------------
+-- Performance Boost: Redefine global functions locally
+-----------------------------------------------------------------------------------------------
 
--- ~'*`~-~'*`~-~'*`~-~'*`~-~'*`~-~'*`~-~'*`~ --
+local Apollo = Apollo
+local Line
+local Marker
+local Colors
 
-local function KuralakCreate(unit)
-  -- Print("Kuralak Create")
+-----------------------------------------------------------------------------------------------
+-- Initialization
+-----------------------------------------------------------------------------------------------
+
+local GeneticAssist = Apollo.GetAddon("GeneticAssist")
+local MyModule = GeneticAssist:NewModule("Kuralak")
+
+function MyModule:OnEnable()
+  Line   = Apollo.GetPackage("GeneticAssist:Line").tPackage
+  Marker = Apollo.GetPackage("GeneticAssist:Marker").tPackage
+  Colors = Apollo.GetPackage("GeneticAssist:Config").tPackage.Colors
+
+  local targetName = 'Kuralak the Defiler'
+  -- local targetName = 'Raid Target Dummy'
+
+  GeneticAssist:SetEncounter(targetName, { ['SkipCombatCheck'] = true })
+  GeneticAssist:RegisterUnitCallback(targetName, 'OnCreate',  'Create',  self)
+  GeneticAssist:RegisterUnitCallback(targetName, 'OnDestroy', 'Destroy', self)
+  GeneticAssist:RegisterUnitCallback(targetName, 'OnHide',    'Hide',    self)
+  GeneticAssist:RegisterUnitCallback(targetName, 'OnUpdate',  'Update',  self)
+end
+
+-----------------------------------------------------------------------------------------------
+-- Functions
+-----------------------------------------------------------------------------------------------
+
+function MyModule:Create(unit)
   if not unit['Lines'] then
-    -- Print("Unit Lines Created")
     local colors = { Colors.red, Colors.cyan, Colors.green, Colors.purple, Colors.pink, Colors.golden, Colors.gray, Colors.blue }
     unit['Lines'] = {}
     for i, v in pairs(colors) do
-      unit['Lines'][i] = GeneticAssistLine.new(GA.gameOverlay, 'solid', v, 3, true)
+      unit['Lines'][i] = Line(GeneticAssist.gameOverlay, 'solid', v, 3, true)
     end
   end
 
   if not unit['Markers'] then
-    -- Print("Unit Marker Created")
     unit['Markers'] = {}
-    unit['Markers']["Number1"]     = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-1", Colors.red, 32, 32, false)
-    unit['Markers']["Number2"]     = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-2", Colors.cyan, 32, 32, false)
-    unit['Markers']["Number3"]     = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-3", Colors.green, 32, 32, false)
-    unit['Markers']["Number4"]     = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-4", Colors.purple, 32, 32, false)
-    unit['Markers']["Number5"]     = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-5", Colors.pink, 32, 32, false)
-    unit['Markers']["Number6"]     = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-6", Colors.golden, 32, 32, false)
-    unit['Markers']["Number1p"]    = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-1", Colors.red, 32, 32, false)
-    unit['Markers']["Number2p"]    = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-2", Colors.cyan, 32, 32, false)
-    unit['Markers']["Number3p"]    = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-3", Colors.green, 32, 32, false)
-    unit['Markers']["Number4p"]    = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-4", Colors.purple, 32, 32, false)
-    unit['Markers']["Number5p"]    = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-5", Colors.pink, 32, 32, false)
-    unit['Markers']["Number6p"]    = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Number-6", Colors.golden, 32, 32, false)
-    unit['Markers']["DirectionN"]  = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-N",  Colors.red, 32, 32, false)
-    unit['Markers']["DirectionNE"] = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-NE", Colors.cyan, 32, 32, false)
-    unit['Markers']["DirectionE"]  = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-E",  Colors.green, 32, 32, false)
-    unit['Markers']["DirectionSE"] = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-SE", Colors.purple, 32, 32, false)
-    unit['Markers']["DirectionS"]  = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-S",  Colors.pink, 32, 32, false)
-    unit['Markers']["DirectionSW"] = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-SW", Colors.golden, 32, 32, false)
-    unit['Markers']["DirectionW"]  = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-W",  Colors.gray, 32, 32, false)
-    unit['Markers']["DirectionNW"] = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-NW", Colors.blue, 32, 32, false)
+    unit['Markers']["Number1"]     = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-1", Colors.red, 32, 32, false)
+    unit['Markers']["Number2"]     = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-2", Colors.cyan, 32, 32, false)
+    unit['Markers']["Number3"]     = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-3", Colors.green, 32, 32, false)
+    unit['Markers']["Number4"]     = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-4", Colors.purple, 32, 32, false)
+    unit['Markers']["Number5"]     = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-5", Colors.pink, 32, 32, false)
+    unit['Markers']["Number6"]     = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-6", Colors.golden, 32, 32, false)
+    unit['Markers']["Number1p"]    = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-1", Colors.red, 32, 32, false)
+    unit['Markers']["Number2p"]    = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-2", Colors.cyan, 32, 32, false)
+    unit['Markers']["Number3p"]    = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-3", Colors.green, 32, 32, false)
+    unit['Markers']["Number4p"]    = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-4", Colors.purple, 32, 32, false)
+    unit['Markers']["Number5p"]    = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-5", Colors.pink, 32, 32, false)
+    unit['Markers']["Number6p"]    = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Number-6", Colors.golden, 32, 32, false)
+    unit['Markers']["DirectionN"]  = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-N",  Colors.red, 32, 32, false)
+    unit['Markers']["DirectionNE"] = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-NE", Colors.cyan, 32, 32, false)
+    unit['Markers']["DirectionE"]  = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-E",  Colors.green, 32, 32, false)
+    unit['Markers']["DirectionSE"] = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-SE", Colors.purple, 32, 32, false)
+    unit['Markers']["DirectionS"]  = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-S",  Colors.pink, 32, 32, false)
+    unit['Markers']["DirectionSW"] = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-SW", Colors.golden, 32, 32, false)
+    unit['Markers']["DirectionW"]  = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-W",  Colors.gray, 32, 32, false)
+    unit['Markers']["DirectionNW"] = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-NW", Colors.blue, 32, 32, false)
   end
 end
 
-local function KuralakDestroy(unit)
-  -- Print("Kuralak Destroy")
+function MyModule:Destroy(unit)
   for i, v in pairs(unit['Markers']) do  v:Hide() end
   for i, v in pairs(unit['Lines']) do    v:Hide() end
 end
 
-local function KuralakHide(unit)
-  -- Print("Kuralak Hide")
+function MyModule:Hide(unit)
   for i, v in pairs(unit['Markers']) do  v:Hide() end
   for i, v in pairs(unit['Lines']) do    v:Hide() end
 end
 
-local function KuralakUpdate(unit)
-  -- Print("Kuralak Update")
+function MyModule:Update(unit)
   local tPos = unit['unit']:GetPosition()
   if not tPos then return end
 
@@ -124,10 +146,3 @@ local function KuralakUpdate(unit)
     for i, v in pairs(unit['Lines']) do    v:Hide() end
   end
 end
-
--- ~'*`~-~'*`~-~'*`~-~'*`~-~'*`~-~'*`~-~'*`~ --
-
-GA:SetCallback('Kuralak the Defiler', 'OnCreate',  KuralakCreate)
-GA:SetCallback('Kuralak the Defiler', 'OnDestroy', KuralakDestroy)
-GA:SetCallback('Kuralak the Defiler', 'OnHide',    KuralakHide)
-GA:SetCallback('Kuralak the Defiler', 'OnUpdate',  KuralakUpdate)

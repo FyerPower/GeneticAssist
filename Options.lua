@@ -1,6 +1,8 @@
 require "Window"
 
-local GA = GeneticAssist
+local Apollo = Apollo
+
+local GA = Apollo.GetAddon("GeneticAssist")
 
 local GeneticAssistOptions = {
   tTabControls = {},

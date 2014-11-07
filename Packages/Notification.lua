@@ -9,7 +9,6 @@ require "Sound"
 -- Performance Boost: Redefine global functions locally
 -----------------------------------------------------------------------------------------------
 
-local Marker = GeneticAssistMarker
 local ApolloColor = ApolloColor
 
 -----------------------------------------------------------------------------------------------
@@ -32,6 +31,7 @@ function Notification.new(window, sprite, sound, pos)
   self.sound = sound
   self.isActive = false
 
+  local Marker = Apollo.GetPackage("GeneticAssist:Marker").tPackage
   self.marker = Marker.new(self.window, self.sprite, ApolloColor.new("ffffffff"), pos.nWidth, pos.nHeight, self.isActive, "ScreenLocation")
   self.marker:Draw({x=pos.nLeft, y=pos.nTop, z=0})
 

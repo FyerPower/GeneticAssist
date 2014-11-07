@@ -1,36 +1,64 @@
-local GameLib = GameLib
-local Colors  = GeneticAssistConfig.Colors
-local Util    = GeneticAssistUtil
-local GA      = GeneticAssist
+-----------------------------------------------------------------------------------------------
+-- Performance Boost: Redefine global functions locally
+-----------------------------------------------------------------------------------------------
 
--- ~'*`~-~'*`~-~'*`~-~'*`~-~'*`~-~'*`~-~'*`~ --
+local Apollo = Apollo
+local Line
+local Marker
+local Colors
 
-local function OmhnaCreate(unit)
+-----------------------------------------------------------------------------------------------
+-- Initialization
+-----------------------------------------------------------------------------------------------
+
+local GeneticAssist = Apollo.GetAddon("GeneticAssist")
+local MyModule = GeneticAssist:NewModule("Ohmna")
+
+function MyModule:OnEnable()
+  Line   = Apollo.GetPackage("GeneticAssist:Line").tPackage
+  Marker = Apollo.GetPackage("GeneticAssist:Marker").tPackage
+  Colors = Apollo.GetPackage("GeneticAssist:Config").tPackage.Colors
+
+  local targetName = 'Dreadphage Ohmna'
+  -- local targetName = 'Raid Target Dummy'
+
+  GeneticAssist:SetEncounter(targetName, {})
+  GeneticAssist:RegisterUnitCallback(targetName, 'OnCreate',  'Create',  self)
+  GeneticAssist:RegisterUnitCallback(targetName, 'OnDestroy', 'Destroy', self)
+  GeneticAssist:RegisterUnitCallback(targetName, 'OnHide',    'Hide',    self)
+  GeneticAssist:RegisterUnitCallback(targetName, 'OnUpdate',  'Update',  self)
+end
+
+-----------------------------------------------------------------------------------------------
+-- Functions
+-----------------------------------------------------------------------------------------------
+
+function MyModule:Create(unit)
   -- if not unit['Lines'] then
   if not unit['Lines'] then
     unit['Lines'] = {}
-    unit['Lines']['1'] = GeneticAssistLine.new(GA.gameOverlay, 'solid', Colors.white,  5, true)
-    unit['Lines']['2'] = GeneticAssistLine.new(GA.gameOverlay, 'solid', Colors.yellow, 5, true)
-    unit['Lines']['3'] = GeneticAssistLine.new(GA.gameOverlay, 'solid', Colors.yellow, 5, true)
+    unit['Lines']['1'] = Line(GeneticAssist.gameOverlay, 'solid', Colors.white,  5, true)
+    unit['Lines']['2'] = Line(GeneticAssist.gameOverlay, 'solid', Colors.yellow, 5, true)
+    unit['Lines']['3'] = Line(GeneticAssist.gameOverlay, 'solid', Colors.yellow, 5, true)
   end
 
   if not unit['Markers'] then
     unit['Markers'] = {}
-    unit['Markers']["DirectionN"]  = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-N",  Colors.red, 32, 32, false)
-    unit['Markers']["DirectionNE"] = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-NE", Colors.cyan, 32, 32, false)
-    unit['Markers']["DirectionE"]  = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-E",  Colors.green, 32, 32, false)
-    unit['Markers']["DirectionSE"] = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-SE", Colors.purple, 32, 32, false)
-    unit['Markers']["DirectionS"]  = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-S",  Colors.pink, 32, 32, false)
-    unit['Markers']["DirectionSW"] = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-SW", Colors.golden, 32, 32, false)
-    unit['Markers']["DirectionW"]  = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-W",  Colors.gray, 32, 32, false)
-    unit['Markers']["DirectionNW"] = GeneticAssistMarker.new(GA.gameOverlay, "GeneticAssistSprites:Direction-NW", Colors.blue, 32, 32, false)
+    unit['Markers']["DirectionN"]  = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-N",  Colors.red, 32, 32, false)
+    unit['Markers']["DirectionNE"] = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-NE", Colors.cyan, 32, 32, false)
+    unit['Markers']["DirectionE"]  = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-E",  Colors.green, 32, 32, false)
+    unit['Markers']["DirectionSE"] = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-SE", Colors.purple, 32, 32, false)
+    unit['Markers']["DirectionS"]  = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-S",  Colors.pink, 32, 32, false)
+    unit['Markers']["DirectionSW"] = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-SW", Colors.golden, 32, 32, false)
+    unit['Markers']["DirectionW"]  = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-W",  Colors.gray, 32, 32, false)
+    unit['Markers']["DirectionNW"] = Marker(GeneticAssist.gameOverlay, "GeneticAssistSprites:Direction-NW", Colors.blue, 32, 32, false)
   end
 end
 
-local function OmhnaDestroy(unit)
+function MyModule:Destroy(unit)
 end
 
-local function OmhnaHide(unit)
+function MyModule:Hide(unit)
   unit['Lines']['1']:Hide()
   unit['Lines']['2']:Hide()
   unit['Lines']['3']:Hide()
@@ -44,7 +72,7 @@ local function OmhnaHide(unit)
   unit['Markers']["DirectionNW"]:Hide()
 end
 
-local function OmhnaUpdate(unit)
+function MyModule:Update(unit)
   -- Target Positioning & Facing
   local tPos = unit['unit']:GetPosition()
   local tFacing = unit['unit']:GetFacing()
@@ -64,10 +92,3 @@ local function OmhnaUpdate(unit)
   unit['Markers']['DirectionW']:Draw( { x = (tPos.x + 33 * math.cos(math.rad(180))), y = tPos.y, z = (tPos.z + 33 * math.sin(math.rad(180)))}):Show()
   unit['Markers']['DirectionNW']:Draw({ x = (tPos.x + 33 * math.cos(math.rad(225))), y = tPos.y, z = (tPos.z + 33 * math.sin(math.rad(225)))}):Show()
 end
-
--- ~'*`~-~'*`~-~'*`~-~'*`~-~'*`~-~'*`~-~'*`~ --
-
-GA:SetCallback('Dreadphage Ohmna', 'OnCreate',  OmhnaCreate)
-GA:SetCallback('Dreadphage Ohmna', 'OnDestroy', OmhnaHide)
-GA:SetCallback('Dreadphage Ohmna', 'OnHide',    OmhnaHide)
-GA:SetCallback('Dreadphage Ohmna', 'OnUpdate',  OmhnaUpdate)

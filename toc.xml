@@ -17,9 +17,9 @@
   <Script Name="Packages\Util.lua"/>
 
   <!-- Locale -->
-  <Script Name="Locale\deDE.lua"/>
-  <Script Name="Locale\enUS.lua"/>
-  <Script Name="Locale\frFR.lua"/>
+  <Script Name="Locales\deDE.lua"/>
+  <Script Name="Locales\enUS.lua"/>
+  <Script Name="Locales\frFR.lua"/>
 
   <!-- Main Script -->
   <Script Name="GeneticAssist.lua"/>
